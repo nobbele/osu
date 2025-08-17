@@ -26,10 +26,10 @@ namespace osu.Game.Database
             if (model.File == null)
                 return;
 
-            GetFileContents(model, model.File)?.CopyTo(outputStream);
+            GetFileContents(model.File)?.CopyTo(outputStream);
         }
 
-        protected virtual Stream? GetFileContents(BeatmapInfo model, INamedFileUsage file)
+        protected Stream? GetFileContents(INamedFileUsage file)
             => UserFileStorage.GetStream(file.File.GetStoragePath());
 
         protected override string FileExtension => @".osu";

@@ -5,11 +5,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using osu.Framework.Platform;
 using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.Formats;
 using osu.Game.Beatmaps.Timing;
 using osu.Game.IO;
+using osu.Game.Overlays.Notifications;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Skinning;
@@ -28,12 +30,15 @@ namespace osu.Game.Database
         {
         }
 
-        protected override Stream? GetFileContents(BeatmapInfo model, INamedFileUsage file)
+        public override void ExportToStream(BeatmapInfo model, Stream outputStream, ProgressNotification? notification, CancellationToken cancellationToken = default)
         {
-            using var contentStream = base.GetFileContents(model, file);
+            if (model.File == null)
+                return;
+
+            using var contentStream = GetFileContents(model.File);
 
             if (contentStream == null)
-                return null;
+                return;
 
             using var contentStreamReader = new LineBufferedReader(contentStream);
 
@@ -44,10 +49,10 @@ namespace osu.Game.Database
             var workingBeatmap = new FlatWorkingBeatmap(beatmapContent);
             var playableBeatmap = workingBeatmap.GetPlayableBeatmap(model.Ruleset);
 
-            using var skinStream = base.GetFileContents(model, file);
+            using var skinStream = GetFileContents(model.File);
 
             if (skinStream == null)
-                return null;
+                return;
 
             using var skinStreamReader = new LineBufferedReader(skinStream);
             var beatmapSkin = new LegacySkin(new SkinInfo(), null!)
@@ -57,17 +62,9 @@ namespace osu.Game.Database
 
             MutateBeatmap(playableBeatmap);
 
-            var stream = new MemoryStream();
-
             // Encode to legacy format
-            using (var sw = new StreamWriter(stream, Encoding.UTF8, 1024, true))
-            {
-                new LegacyBeatmapEncoder(playableBeatmap, beatmapSkin).Encode(sw);
-            }
-
-            stream.Seek(0, SeekOrigin.Begin);
-
-            return stream;
+            using var sw = new StreamWriter(outputStream, Encoding.UTF8, 1024, true);
+            new LegacyBeatmapEncoder(playableBeatmap, beatmapSkin).Encode(sw);
         }
 
         protected void MutateBeatmap(IBeatmap playableBeatmap)
