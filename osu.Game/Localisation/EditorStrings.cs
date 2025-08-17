@@ -55,19 +55,9 @@ namespace osu.Game.Localisation
         public static LocalisableString ExportForCompatibility => new TranslatableString(getKey(@"export_for_compatibility"), @"For compatibility (.osz)");
 
         /// <summary>
-        /// "Export difficulty"
+        /// "Difficulty for compatibility (.osu)"
         /// </summary>
-        public static LocalisableString ExportDifficulty => new TranslatableString(getKey(@"export_difficulty"), @"Export difficulty");
-
-        /// <summary>
-        /// "For editing (.osu)"
-        /// </summary>
-        public static LocalisableString ExportDifficultyForEditing => new TranslatableString(getKey(@"export_difficulty_for_editing"), @"For editing (.osu)");
-
-        /// <summary>
-        /// "For compatibility (.osu)"
-        /// </summary>
-        public static LocalisableString ExportDifficultyForCompatibility => new TranslatableString(getKey(@"export_difficulty_for_compatibility"), @"For compatibility (.osu)");
+        public static LocalisableString ExportDifficultyForCompatibility => new TranslatableString(getKey(@"export_difficulty_for_compatibility"), @"Difficulty for compatibility (.osu)");
 
         /// <summary>
         /// "Create new difficulty"

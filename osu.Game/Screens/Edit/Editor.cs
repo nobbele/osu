@@ -1290,11 +1290,8 @@ namespace osu.Game.Screens.Edit
             if (RuntimeInfo.OS != RuntimeInfo.Platform.Android)
             {
                 var export = createExportMenu();
-                var exportDifficulty = createExportDifficultyMenu();
                 saveRelatedMenuItems.AddRange(export.Items);
-                saveRelatedMenuItems.AddRange(exportDifficulty.Items);
                 yield return export;
-                yield return exportDifficulty;
             }
 
             if (RuntimeInfo.IsDesktop)
@@ -1335,20 +1332,10 @@ namespace osu.Game.Screens.Edit
             {
                 new EditorMenuItem(EditorStrings.ExportForEditing, MenuItemType.Standard, () => exportBeatmap(false)),
                 new EditorMenuItem(EditorStrings.ExportForCompatibility, MenuItemType.Standard, () => exportBeatmap(true)),
+                new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, () => exportDifficulty(true))
             };
 
             return new EditorMenuItem(CommonStrings.Export) { Items = exportItems };
-        }
-
-        private EditorMenuItem createExportDifficultyMenu()
-        {
-            var exportItems = new List<MenuItem>
-            {
-                new EditorMenuItem(EditorStrings.ExportDifficultyForEditing, MenuItemType.Standard, () => exportDifficulty(false)),
-                new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, () => exportDifficulty(true)),
-            };
-
-            return new EditorMenuItem(EditorStrings.ExportDifficulty) { Items = exportItems };
         }
 
         private void editExternally()
