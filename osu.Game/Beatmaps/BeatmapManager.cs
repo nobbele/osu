@@ -45,6 +45,7 @@ namespace osu.Game.Beatmaps
         private readonly BeatmapExporter beatmapExporter;
 
         private readonly LegacyBeatmapExporter legacyBeatmapExporter;
+        private readonly LegacyDifficultyExporter legacyDifficultyExporter;
 
         public ProcessBeatmapDelegate? ProcessBeatmap { private get; set; }
 
@@ -87,6 +88,11 @@ namespace osu.Game.Beatmaps
             };
 
             legacyBeatmapExporter = new LegacyBeatmapExporter(storage)
+            {
+                PostNotification = obj => PostNotification?.Invoke(obj)
+            };
+
+            legacyDifficultyExporter = new LegacyDifficultyExporter(storage)
             {
                 PostNotification = obj => PostNotification?.Invoke(obj)
             };
@@ -478,6 +484,7 @@ namespace osu.Game.Beatmaps
         public Task Export(BeatmapSetInfo beatmap) => beatmapExporter.ExportAsync(beatmap.ToLive(Realm));
 
         public Task ExportLegacy(BeatmapSetInfo beatmap) => legacyBeatmapExporter.ExportAsync(beatmap.ToLive(Realm));
+        public Task ExportLegacy(BeatmapInfo beatmap) => legacyDifficultyExporter.ExportAsync(beatmap.ToLive(Realm));
 
         private void updateHashAndMarkDirty(BeatmapSetInfo setInfo)
         {

@@ -1290,8 +1290,11 @@ namespace osu.Game.Screens.Edit
             if (RuntimeInfo.OS != RuntimeInfo.Platform.Android)
             {
                 var export = createExportMenu();
+                var exportDifficulty = createExportDifficultyMenu();
                 saveRelatedMenuItems.AddRange(export.Items);
+                saveRelatedMenuItems.AddRange(exportDifficulty.Items);
                 yield return export;
+                yield return exportDifficulty;
             }
 
             if (RuntimeInfo.IsDesktop)
@@ -1318,7 +1321,8 @@ namespace osu.Game.Screens.Edit
                 yield return new EditorMenuItem(EditorStrings.OpenInfoPage, MenuItemType.Standard,
                     () => (Game as OsuGame)?.OpenUrlExternally(editorBeatmap.BeatmapInfo.GetOnlineURL(api, editorBeatmap.BeatmapInfo.Ruleset)));
                 yield return new EditorMenuItem(EditorStrings.OpenDiscussionPage, MenuItemType.Standard,
-                    () => (Game as OsuGame)?.OpenUrlExternally($@"{api.Endpoints.WebsiteUrl}/beatmapsets/{editorBeatmap.BeatmapInfo.BeatmapSet!.OnlineID}/discussion/{editorBeatmap.BeatmapInfo.OnlineID}"));
+                    () => (Game as OsuGame)?.OpenUrlExternally(
+                        $@"{api.Endpoints.WebsiteUrl}/beatmapsets/{editorBeatmap.BeatmapInfo.BeatmapSet!.OnlineID}/discussion/{editorBeatmap.BeatmapInfo.OnlineID}"));
             }
 
             yield return new OsuMenuItemSpacer();
@@ -1334,6 +1338,17 @@ namespace osu.Game.Screens.Edit
             };
 
             return new EditorMenuItem(CommonStrings.Export) { Items = exportItems };
+        }
+
+        private EditorMenuItem createExportDifficultyMenu()
+        {
+            var exportItems = new List<MenuItem>
+            {
+                // new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, () => exportDifficulty(false)),
+                new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, exportDifficulty),
+            };
+
+            return new EditorMenuItem(EditorStrings.ExportDifficulty) { Items = exportItems };
         }
 
         private void editExternally()
@@ -1396,30 +1411,28 @@ namespace osu.Game.Screens.Edit
             void startSubmission() => this.Push(new BeatmapSubmissionScreen());
         }
 
-        private void exportBeatmap(bool legacy)
+        private void startExportTask(Func<Task> runExport)
         {
             if (HasUnsavedChanges)
             {
-                dialogOverlay.Push(new SaveRequiredPopupDialog(() => attemptAsyncMutationOperation(() =>
-                {
-                    if (!Save())
-                        return Task.CompletedTask;
-
-                    return runExport();
-                })));
+                dialogOverlay.Push(new SaveRequiredPopupDialog(() => attemptAsyncMutationOperation(() => Save() ? runExport() : Task.CompletedTask)));
             }
             else
             {
                 attemptAsyncMutationOperation(runExport);
             }
+        }
 
-            Task runExport()
-            {
-                if (legacy)
-                    return beatmapManager.ExportLegacy(Beatmap.Value.BeatmapSetInfo);
-                else
-                    return beatmapManager.Export(Beatmap.Value.BeatmapSetInfo);
-            }
+        private void exportBeatmap(bool legacy)
+        {
+            startExportTask(() => legacy
+                ? beatmapManager.ExportLegacy(Beatmap.Value.BeatmapSetInfo)
+                : beatmapManager.Export(Beatmap.Value.BeatmapSetInfo));
+        }
+
+        private void exportDifficulty()
+        {
+            startExportTask(() => beatmapManager.ExportLegacy(Beatmap.Value.BeatmapInfo));
         }
 
         /// <summary>
