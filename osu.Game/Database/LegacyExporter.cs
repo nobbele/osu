@@ -20,7 +20,7 @@ namespace osu.Game.Database
     /// Handles exporting models to files for sharing / consumption outside the game.
     /// </summary>
     public abstract class LegacyExporter<TModel>
-        where TModel : RealmObject, IHasNamedFiles, IHasGuidPrimaryKey
+        where TModel : RealmObject, IHasGuidPrimaryKey
     {
         /// <summary>
         /// Max length of filename (including extension).
