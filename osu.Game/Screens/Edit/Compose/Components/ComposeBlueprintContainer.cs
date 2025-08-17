@@ -187,8 +187,8 @@ namespace osu.Game.Screens.Edit.Compose.Components
         /// </summary>
         protected virtual IEnumerable<Drawable> CreateTernaryButtons()
         {
-            //TODO: this should only be enabled (visible?) for rulesets that provide combo-supporting HitObjects.
-            yield return new NewComboTernaryButton { Current = NewCombo };
+            if (Composer.SupportsCombo)
+                yield return new NewComboTernaryButton { Current = NewCombo };
 
             foreach (var kvp in SelectionHandler.SelectionSampleStates)
             {

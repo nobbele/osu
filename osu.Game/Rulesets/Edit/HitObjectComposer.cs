@@ -26,6 +26,7 @@ using osu.Game.Rulesets.Edit.Tools;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Drawables;
+using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.UI;
 using osu.Game.Rulesets.UI.Scrolling;
 using osu.Game.Screens.Edit;
@@ -96,6 +97,8 @@ namespace osu.Game.Rulesets.Edit
         private RadioButton lastTool;
 
         protected DrawableRuleset<TObject> DrawableRuleset { get; private set; }
+
+        public override bool SupportsCombo => typeof(TObject).IsAssignableTo(typeof(IHasCombo));
 
         protected HitObjectComposer(Ruleset ruleset)
             : base(ruleset)
@@ -598,6 +601,11 @@ namespace osu.Game.Rulesets.Edit
         /// All <see cref="DrawableHitObject"/>s in currently loaded beatmap.
         /// </summary>
         public abstract IEnumerable<DrawableHitObject> HitObjects { get; }
+
+        /// <summary>
+        /// Whether the <see cref="HitObject"/> this <see cref="HitObjectComposer"/> composes has combo. <seealso cref="IHasCombo"/>
+        /// </summary>
+        public abstract bool SupportsCombo { get; }
 
         /// <summary>
         /// Whether the user's cursor is currently in an area of the <see cref="HitObjectComposer"/> that is valid for placement.
