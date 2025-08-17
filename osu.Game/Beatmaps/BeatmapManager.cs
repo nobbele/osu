@@ -43,6 +43,7 @@ namespace osu.Game.Beatmaps
         private readonly WorkingBeatmapCache workingBeatmapCache;
 
         private readonly BeatmapExporter beatmapExporter;
+        private readonly DifficultyExporter difficultyExporter;
 
         private readonly LegacyBeatmapExporter legacyBeatmapExporter;
         private readonly LegacyDifficultyExporter legacyDifficultyExporter;
@@ -83,6 +84,11 @@ namespace osu.Game.Beatmaps
             workingBeatmapCache = CreateWorkingBeatmapCache(audioManager, gameResources, userResources, defaultBeatmap, host);
 
             beatmapExporter = new BeatmapExporter(storage)
+            {
+                PostNotification = obj => PostNotification?.Invoke(obj)
+            };
+
+            difficultyExporter = new DifficultyExporter(storage)
             {
                 PostNotification = obj => PostNotification?.Invoke(obj)
             };
@@ -482,6 +488,7 @@ namespace osu.Game.Beatmaps
             beatmapImporter.BeginExternalEditing(model);
 
         public Task Export(BeatmapSetInfo beatmap) => beatmapExporter.ExportAsync(beatmap.ToLive(Realm));
+        public Task Export(BeatmapInfo beatmap) => difficultyExporter.ExportAsync(beatmap.ToLive(Realm));
 
         public Task ExportLegacy(BeatmapSetInfo beatmap) => legacyBeatmapExporter.ExportAsync(beatmap.ToLive(Realm));
         public Task ExportLegacy(BeatmapInfo beatmap) => legacyDifficultyExporter.ExportAsync(beatmap.ToLive(Realm));

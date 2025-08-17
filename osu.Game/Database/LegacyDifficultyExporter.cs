@@ -5,14 +5,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using osu.Framework.Platform;
 using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.Formats;
 using osu.Game.Beatmaps.Timing;
-using osu.Game.Extensions;
 using osu.Game.IO;
-using osu.Game.Overlays.Notifications;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Skinning;
@@ -24,22 +21,19 @@ namespace osu.Game.Database
     /// Exporter for osu!stable legacy beatmap files.
     /// Convert beatmap to legacy format and exports it.
     /// </summary>
-    public class LegacyDifficultyExporter : LegacyExporter<BeatmapInfo>
+    public class LegacyDifficultyExporter : DifficultyExporter
     {
         public LegacyDifficultyExporter(Storage storage)
             : base(storage)
         {
         }
 
-        public override void ExportToStream(BeatmapInfo model, Stream outputStream, ProgressNotification? notification, CancellationToken cancellationToken = default)
+        protected override Stream? GetFileContents(BeatmapInfo model, INamedFileUsage file)
         {
-            if (model.File == null)
-                return;
-
-            using var contentStream = GetFileContents(model.File);
+            using var contentStream = base.GetFileContents(model, file);
 
             if (contentStream == null)
-                return;
+                return null;
 
             using var contentStreamReader = new LineBufferedReader(contentStream);
 
@@ -50,10 +44,10 @@ namespace osu.Game.Database
             var workingBeatmap = new FlatWorkingBeatmap(beatmapContent);
             var playableBeatmap = workingBeatmap.GetPlayableBeatmap(model.Ruleset);
 
-            using var skinStream = GetFileContents(model.File);
+            using var skinStream = base.GetFileContents(model, file);
 
             if (skinStream == null)
-                return;
+                return null;
 
             using var skinStreamReader = new LineBufferedReader(skinStream);
             var beatmapSkin = new LegacySkin(new SkinInfo(), null!)
@@ -63,12 +57,20 @@ namespace osu.Game.Database
 
             MutateBeatmap(playableBeatmap);
 
+            var stream = new MemoryStream();
+
             // Encode to legacy format
-            using var sw = new StreamWriter(outputStream, Encoding.UTF8, 1024, true);
-            new LegacyBeatmapEncoder(playableBeatmap, beatmapSkin).Encode(sw);
+            using (var sw = new StreamWriter(stream, Encoding.UTF8, 1024, true))
+            {
+                new LegacyBeatmapEncoder(playableBeatmap, beatmapSkin).Encode(sw);
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+
+            return stream;
         }
 
-        protected virtual void MutateBeatmap(IBeatmap playableBeatmap)
+        protected void MutateBeatmap(IBeatmap playableBeatmap)
         {
             // Convert beatmap elements to be compatible with legacy format
             // So we truncate time and position values to integers, and convert paths with multiple segments to Bézier curves
@@ -155,9 +157,5 @@ namespace osu.Game.Database
                 }
             }
         }
-
-        protected Stream? GetFileContents(INamedFileUsage file) => UserFileStorage.GetStream(file.File.GetStoragePath());
-
-        protected override string FileExtension => @".osu";
     }
 }

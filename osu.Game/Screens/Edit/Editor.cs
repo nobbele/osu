@@ -1344,8 +1344,8 @@ namespace osu.Game.Screens.Edit
         {
             var exportItems = new List<MenuItem>
             {
-                // new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, () => exportDifficulty(false)),
-                new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, exportDifficulty),
+                new EditorMenuItem(EditorStrings.ExportDifficultyForEditing, MenuItemType.Standard, () => exportDifficulty(false)),
+                new EditorMenuItem(EditorStrings.ExportDifficultyForCompatibility, MenuItemType.Standard, () => exportDifficulty(true)),
             };
 
             return new EditorMenuItem(EditorStrings.ExportDifficulty) { Items = exportItems };
@@ -1430,9 +1430,11 @@ namespace osu.Game.Screens.Edit
                 : beatmapManager.Export(Beatmap.Value.BeatmapSetInfo));
         }
 
-        private void exportDifficulty()
+        private void exportDifficulty(bool legacy)
         {
-            startExportTask(() => beatmapManager.ExportLegacy(Beatmap.Value.BeatmapInfo));
+            startExportTask(() => legacy
+                ? beatmapManager.ExportLegacy(Beatmap.Value.BeatmapInfo)
+                : beatmapManager.Export(Beatmap.Value.BeatmapInfo));
         }
 
         /// <summary>
